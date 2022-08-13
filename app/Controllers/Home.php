@@ -11,17 +11,17 @@ class Home extends APIController
     public function index()
     {
         
-      // $userModel = new Usuario_model();
+      $userModel = new Usuario_model();
 
-      // $userModel->teste();
+      $userModel->teste();
 
 
-      HttpSuccess([
-          "success" => true,
-          "data" => [
-            "token" => '213'
-          ]
-        ], $this->respond);
+      // HttpSuccess([
+      //     "success" => true,
+      //     "data" => [
+      //       "token" => '213'
+      //     ]
+      //   ], $this->respond);
 
       // return view('welcome_message');
     }
