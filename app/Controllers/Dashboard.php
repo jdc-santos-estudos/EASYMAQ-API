@@ -2,48 +2,49 @@
 
 namespace App\Controllers;
 
+use App\Controllers\APIController;
+use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\RESTful\ResourceController;
+
 use \Firebase\JWT\JWT;
 
-class Dashboard extends BaseController
+class Dashboard extends APIController
 {
   public function login()
   {
     try {
 
-      $iat = time();
-      $nbf = $iat + 10;
-      $exp = $iat + 3600;
+      // $iat = time();
+      // $nbf = $iat + 10;
+      // $exp = $iat + 3600;
      
-      $payload = array(
-          "iss" => "The_claim",
-          "aud" => "The_Aud",
-          "iat" => $iat,
-          "nbf" => $nbf,
-          "exp" => $exp,
-          "data" => [
-            "nome" => "Gustavo",
-            "perfil" => 'ADMIN'
-          ]
-      );
+      // $payload = array(
+      //     "iss" => "The_claim",
+      //     "aud" => "The_Aud",
+      //     "iat" => $iat,
+      //     "nbf" => $nbf,
+      //     "exp" => $exp,
+      //     "data" => [
+      //       "nome" => "Gustavo",
+      //       "perfil" => 'ADMIN'
+      //     ]
+      // );
      
-      $token = JWT::encode($payload, 'segredosecreto', "HS256");
+      // $token = JWT::encode($payload, 'segredosecreto', "HS256");
 
-      HttpSuccess([
-        "success" => true,
-        "data" => [
-          "token" => $token
+      $response = [
+        'status'   => 200,
+        'error'    => null,
+        'messages' => [
+            'success' => 'Employee created successfully'
         ]
-      ]);
+      ];
 
+      echo "OK";
+
+      //$this->respond($response);
     } catch(Exception $e) {
-
-      HttpError([
-        "success" => false,
-        "data" => [
-          "mensagem" => "Erro interno ao tentar efetuar o login",
-          "error" => e->getMessage()
-        ]
-      ]);
+      $this->respond(['msg' => 'error']);
     }
   }
 }

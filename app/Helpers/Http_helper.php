@@ -1,13 +1,23 @@
 <?php 
 
-function HttpSuccess($array)
+function HttpSuccess($data, $respond)
 {
-  header('Content-type: application/json; charset=utf-8');
-  echo json_encode($array);
+  $response = [
+    'status'   => 200,
+    'error'    => null,
+    'data' => $data
+  ];
+
+  return $respond($response);
 }
 
-function HttpError($array)
+function HttpError($data, $respond, $path)
 {
-  header('Content-type: application/json; charset=utf-8');
-  echo json_encode($array);
+  $response = [
+    'status'   => 404,
+    'error'    => null,
+    'data' => $data
+  ];
+
+  return $respond($response);
 }

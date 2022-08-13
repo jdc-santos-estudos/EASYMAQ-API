@@ -2,20 +2,28 @@
 
 namespace App\Controllers;
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+use App\Controllers\APIController;
 
-use SendinBlue\Client\Configuration;
-use SendinBlue\Client\Api\AccountApi;
-use GuzzleHttp\Client;
+use App\Models\Usuario_model;
 
-
-class Home extends BaseController
+class Home extends APIController
 {
     public function index()
     {
-        return view('welcome_message');
+        
+      // $userModel = new Usuario_model();
+
+      // $userModel->teste();
+
+
+      HttpSuccess([
+          "success" => true,
+          "data" => [
+            "token" => '213'
+          ]
+        ], $this->respond);
+
+      // return view('welcome_message');
     }
 }
 
