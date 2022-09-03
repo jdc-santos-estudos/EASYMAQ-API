@@ -2,49 +2,62 @@
 
 namespace App\Controllers;
 
-use App\Controllers\APIController;
-use CodeIgniter\API\ResponseTrait;
-use CodeIgniter\RESTful\ResourceController;
+use App\Controllers\API;
+
+// models
+use App\Models\Usuario_model;
 
 use \Firebase\JWT\JWT;
 
-class Dashboard extends APIController
+class Dashboard extends API
 {
+  public function __construct() {
+    parent::__construct();
+  }
+
   public function login()
   {
     try {
 
-      // $iat = time();
-      // $nbf = $iat + 10;
-      // $exp = $iat + 3600;
-     
-      // $payload = array(
-      //     "iss" => "The_claim",
-      //     "aud" => "The_Aud",
-      //     "iat" => $iat,
-      //     "nbf" => $nbf,
-      //     "exp" => $exp,
-      //     "data" => [
-      //       "nome" => "Gustavo",
-      //       "perfil" => 'ADMIN'
-      //     ]
-      // );
-     
-      // $token = JWT::encode($payload, 'segredosecreto', "HS256");
+      // instanciando um objeto da classe Usuario_model
+      $user = new Usuario_model();
 
-      $response = [
-        'status'   => 200,
-        'error'    => null,
-        'messages' => [
-            'success' => 'Employee created successfully'
-        ]
-      ];
+      // definindo validações que os campos precisarão passar.
+      $this->validation->setRules([
+        'email'    => 'required|valid_email',
+        'senha' => 'required|min_length[6]'
+      ]);
 
-      echo "OK";
+      // executando a validação dos erros
+      $this->validation->withRequest($this->request)->run();
 
-      //$this->respond($response);
-    } catch(Exception $e) {
-      $this->respond(['msg' => 'error']);
+      // recuperando os erros da validação
+      $errors = $this->validation->getErrors();
+
+      // verificando se existe erro nos campos, se existir, retorna a mensagem de erro.
+      if ($errors) { return $this->HttpError400($errors, 'campos inválidos'); }
+
+      // pegando os dados do request de login.
+      $email = $this->request->getVar('email');
+      $senha = $this->request->getVar('senha');
+
+      // chamando a função de logar do usuário
+      $userData = $user->logar($email, $senha);
+
+      // verifica se encontrou algum usuário na busca, se nao encontrou, retorna a mensagem de erro.
+      if (!$userData) { return $this->HttpError400([], 'email ou senha incorretos.'); }
+      
+      // gerando o token de autenticação
+      $token = JWT_generate($userData);
+
+      // retornando o token com a mensagem de sucesso
+      return $this->HttpSuccess(["token" => $token],'login efetuado com sucesso');
+
+    } catch(\Exception $e) {
+
+      // retornando mensagem de erro interno
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro ao efetuar o login');
+
     }
   }
 }

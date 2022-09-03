@@ -2,29 +2,18 @@
 
 namespace App\Controllers;
 
-use App\Controllers\APIController;
+use App\Controllers\API;
 
 use App\Models\Usuario_model;
 
-class Home extends APIController
+class Home extends API
 {
     public function index()
     {
-        
-      $userModel = new Usuario_model();
-
-      $userModel->teste();
-
-
-      // HttpSuccess([
-      //     "success" => true,
-      //     "data" => [
-      //       "token" => '213'
-      //     ]
-      //   ], $this->respond);
-
-      // return view('welcome_message');
+      try {
+        return $this->HttpSuccess([], 'mensagem de sucesso!');
+      } catch(\Exception $e) {
+        return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno...');
+      }
     }
 }
-
-

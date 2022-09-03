@@ -36,7 +36,14 @@ $routes->set404Override();
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
-$routes->get('/dashboard','Dashboard::login');
+$routes->post('/dashboard/login','Dashboard::login');
+$routes->post('/usuario/cadastrar','Usuario::cadastrar');
+$routes->get('/usuario/perfil','Usuario::perfil');
+
+
+// rotas para visualizar o contrato e gerar seu PDF
+$routes->get('/contrato/show-pdf','Contrato::showPDF');
+$routes->get('/contrato/download-pdf','Contrato::downloadPDF');
 
 /*
  * --------------------------------------------------------------------

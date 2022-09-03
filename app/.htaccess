@@ -4,3 +4,7 @@
 <IfModule !authz_core_module>
     Deny from all
 </IfModule>
+
+RewriteEngine On    
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]

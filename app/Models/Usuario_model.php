@@ -5,13 +5,74 @@
 
 	class Usuario_model extends Model {
 		
-    public function teste() {
-      
-      // $dns = 'MySQLi://xjdtdafc_admin:@teste123@jdc.profrodolfo.com.br:3306/xjdtdafc_easymaq?charset=utf8&DBCollat=utf8_general_ci';
+    public function logar($email, $pw) {
+      $email = addslashes($email);
+      $pw  = addslashes($pw);
 
-      // $db = $this->load->database('SELECT * FROM usuarios');
-      $sql = "Select * from usuarios";    
+      // monta a consulta
+      $sql = "SELECT cd_usuario, nm_usuario, cd_perfil, ds_senha FROM tb_usuario WHERE ds_email = '".$email."'";
+
+      // executa a consulta
       $query = $this->db->query($sql);
-      print_r($query->getResult());
+
+      // recupera os dados da consulta como Array
+      $res = ObjectToArray($query->getResult());
+      
+      // se encontrou alguem usuário com este email...
+      if (count($res)) {
+    
+        // se a senha enviada for compativel com a que está no BD...
+        if (password_verify($pw.'.'. config('PW_CONCAT'),$res[0]['ds_senha'])) {
+          
+          // tira os dados do usuário do array.
+          $user = $res[0];
+
+          // remove a senha do array do usuário para não mostra-lá no front.
+          unset($user['ds_senha']);
+
+          // retorna os dados do usuário.
+          return $user;
+        }
+      }
+    }
+
+    public function cadastrar($dados) {
+      $data = [
+        'nm_usuario' => $dados->nome,
+        'ds_email' => $dados->email,
+        'ds_senha' => $dados->senha,
+        'cd_perfil' => $dados->perfil,
+        'cd_cidade' => $dados->cidade,
+        'status_usuario' => $dados->status
+      ];
+
+      $dataSql = [];
+
+      // adiciona barra inverida antes dos caracteres especiais \', ou \# etc...
+      foreach ($data as $campo => $valor) {
+        $dataSql[] = addslashes($valor);
+      }
+
+      // monta a query
+      $sql = 'INSERT INTO tb_usuario (nm_usuario, ds_email, ds_senha, cd_perfil, cd_cidade, status_usuario) VALUES (?,?,?,?,?,?)';
+
+      // se cadastrou o usuário com sucesso, retorna true;
+      if ($this->db->query($sql,$dataSql)) return true;
+    }
+
+    public function buscarPorEmail($email) {
+      $email = addslashes($email);
+
+      // monta a consulta
+      $sql = 'SELECT cd_usuario, nm_usuario, cd_perfil FROM tb_usuario WHERE ds_email = ?';
+
+      // executa a consulta
+      $query = $this->db->query($sql,[$email]);
+
+      // recupera os dados da consulta como Array
+      $res = ObjectToArray($query->getResult());
+      
+      // se encontrou alguem usuário com este email, retorna os dados dele.
+      if ($res) return $res[0];
     }
 	}
