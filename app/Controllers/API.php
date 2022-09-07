@@ -23,7 +23,7 @@ class API extends ResourceController
     return $this->response->setStatusCode(200)->setJSON([
       "success" => true,
       "message" => $message,
-      "data" => $data
+      "dados" => $data
     ]);
   }
 
@@ -32,7 +32,7 @@ class API extends ResourceController
     return $this->response->setStatusCode(400)->setJSON([
       "success" => false,
       "message" => $message,
-      "data" => $data
+      "dados" => $data
     ]);
   }
 

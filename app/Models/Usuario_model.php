@@ -6,6 +6,7 @@
 	class Usuario_model extends Model {
 		
     public function logar($email, $pw) {
+
       $email = addslashes($email);
       $pw  = addslashes($pw);
 
@@ -22,7 +23,7 @@
       if (count($res)) {
     
         // se a senha enviada for compativel com a que está no BD...
-        if (password_verify($pw.'.'. config('PW_CONCAT'),$res[0]['ds_senha'])) {
+        if (password_verify($pw.'.'. getenv('JWT_SECRET'),$res[0]['ds_senha'])) {
           
           // tira os dados do usuário do array.
           $user = $res[0];
@@ -68,6 +69,37 @@
 
       // executa a consulta
       $query = $this->db->query($sql,[$email]);
+
+      // recupera os dados da consulta como Array
+      $res = ObjectToArray($query->getResult());
+      
+      // se encontrou alguem usuário com este email, retorna os dados dele.
+      if ($res) return $res[0];
+    }
+
+    public function getInfo($cd) {
+
+      // monta a consulta
+      $sql = 'SELECT 
+                u.cd_usuario,
+                u.cd_cidade,
+                u.cd_perfil,
+                u.nm_usuario,
+                u.ds_email,
+                u.nm_razao_social,
+                u.nm_fantasia,
+                p.cd_tipo tipo_perfil
+              FROM 
+                tb_usuario as u
+              JOIN
+                tb_perfil as p
+              ON 
+                u.cd_perfil = p.cd_perfil
+              WHERE 
+                u.cd_usuario = ?';
+
+      // executa a consulta
+      $query = $this->db->query($sql,[$cd]);
 
       // recupera os dados da consulta como Array
       $res = ObjectToArray($query->getResult());

@@ -34,4 +34,14 @@
       $query = $this->builder->get();
       return ObjectToArray($query->getResult());
     }
+
+    public function getConfigFront($version) {
+      $version = addslashes($version);
+
+      $query = $this->db->query('SELECT * FROM tb_configuracao WHERE nm_config = "CONFIG_FRONT"');
+
+      $res = ObjectToArray($query->getResult());
+
+      if (is_array($res) && count($res)) return (json_decode(json_decode($res[0]['ds_valor']),1)[$version]);
+    }
 	}

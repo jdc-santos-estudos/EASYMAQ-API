@@ -37,9 +37,14 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 $routes->post('/dashboard/login','Dashboard::login');
+
+// rotas de usuário
 $routes->post('/usuario/cadastrar','Usuario::cadastrar');
 $routes->get('/usuario/perfil','Usuario::perfil');
+$routes->get('/usuario/get-info','Usuario::getInfo');
 
+// rotas de configurações
+$routes->get('/v1/get-config-front','Configuracao::getConfigFront');
 
 // rotas para visualizar o contrato e gerar seu PDF
 $routes->get('/contrato/show-pdf','Contrato::showPDF');

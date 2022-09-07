@@ -78,4 +78,24 @@ class Usuario extends API
 
     }
   }
+
+  public function getInfo() {
+    try {
+      // recupera o token do header da requisição.
+      $token = $this->request->getServer('HTTP_AUTHORIZATION');
+        
+      // valida o token, se estiver tudo OK, retorna os dados.
+      $xdecoded = JWT_validate($token);
+      $userData = $xdecoded->data;
+
+      $user = new Usuario_model();
+
+      $userInfo = $user->getInfo($userData->cd_usuario);
+
+      return $this->HttpSuccess($userInfo, 'dados da conta recuperados com sucesso');
+
+    } catch(\Exception $e) {
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar recuperar os dados usuário logado.');
+    }
+  }
 }

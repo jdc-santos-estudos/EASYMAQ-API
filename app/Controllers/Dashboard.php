@@ -51,7 +51,7 @@ class Dashboard extends API
       $token = JWT_generate($userData);
 
       // retornando o token com a mensagem de sucesso
-      return $this->HttpSuccess(["token" => $token],'login efetuado com sucesso');
+      return $this->HttpSuccess($token,'login efetuado com sucesso');
 
     } catch(\Exception $e) {
 

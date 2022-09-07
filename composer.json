@@ -11,7 +11,8 @@
         "sendinblue/api-v3-sdk": "^8.3",
         
         "dompdf/dompdf": "^2.0",
-        "docusign/esign-client": "^6.10"
+        "docusign/esign-client": "^6.10",
+        "agungsugiarto/codeigniter4-cors": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
