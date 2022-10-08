@@ -6,7 +6,6 @@
 	class Configuracao_model extends Model {
     
     protected $builder;
-    protected $allowedFields = [];
 
     public function __construct() {
       parent::__construct();

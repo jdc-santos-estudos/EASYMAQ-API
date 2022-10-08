@@ -1,9 +1,14 @@
 <?php 
 	namespace App\Models;
 
-	use CodeIgniter\Model;
+	use App\Models\EM_model;
 
-	class Usuario_model extends Model {
+	class Usuario_model extends EM_model {
+    
+    public function __construct() {
+      parent::__construct();
+      $this->builder = $this->db->table('tb_usuario');
+    }
 		
     public function logar($email, $pw) {
 
@@ -11,7 +16,15 @@
       $pw  = addslashes($pw);
 
       // monta a consulta
-      $sql = "SELECT cd_usuario, nm_usuario, cd_perfil, ds_senha FROM tb_usuario WHERE ds_email = '".$email."'";
+      $sql = "SELECT
+                cd_usuario, nm_usuario, tb_perfil.cd_perfil cd_perfil, ds_senha, cd_tipo
+              FROM 
+                tb_usuario 
+              JOIN 
+                tb_perfil
+              ON  
+                tb_perfil.cd_perfil = tb_usuario.cd_perfil
+              WHERE ds_email = '".$email."'";
 
       // executa a consulta
       $query = $this->db->query($sql);
@@ -39,26 +52,17 @@
 
     public function cadastrar($dados) {
       $data = [
-        'nm_usuario' => $dados->nome,
-        'ds_email' => $dados->email,
-        'ds_senha' => $dados->senha,
-        'cd_perfil' => $dados->perfil,
-        'cd_cidade' => $dados->cidade,
-        'status_usuario' => $dados->status
+        'nm_usuario' => $dados->nm_usuario,
+        'ds_email' => $dados->ds_email,
+        'ds_senha' => password_hash($dados->ds_senha.'.'. getenv('JWT_SECRET'), PASSWORD_BCRYPT),
+        'cd_perfil' => $dados->cd_perfil,
+        'cd_cidade' => $dados->cd_cidade,
+        'dt_criacao' => date('Y-m-d H:i:s')
       ];
 
-      $dataSql = [];
+      $data['status_usuario'] = 'INATIVO';
 
-      // adiciona barra inverida antes dos caracteres especiais \', ou \# etc...
-      foreach ($data as $campo => $valor) {
-        $dataSql[] = addslashes($valor);
-      }
-
-      // monta a query
-      $sql = 'INSERT INTO tb_usuario (nm_usuario, ds_email, ds_senha, cd_perfil, cd_cidade, status_usuario) VALUES (?,?,?,?,?,?)';
-
-      // se cadastrou o usuário com sucesso, retorna true;
-      if ($this->db->query($sql,$dataSql)) return true;
+      return $this->builder->insert($data);
     }
 
     public function buscarPorEmail($email) {
@@ -97,6 +101,19 @@
                 u.cd_perfil = p.cd_perfil
               WHERE 
                 u.cd_usuario = ?';
+
+      // executa a consulta
+      $query = $this->db->query($sql,[$cd]);
+
+      // recupera os dados da consulta como Array
+      $res = ObjectToArray($query->getResult());
+      
+      // se encontrou alguem usuário com este email, retorna os dados dele.
+      if ($res) return $res[0];
+    }
+
+    public function deleteAccount($cd) {
+      $sql = 'UPDATE tb_usuario SET ds_email = "#DELETADO#" + ds_email, status_usuario = "INATIVO" WHERE cd_usuario = ?';
 
       // executa a consulta
       $query = $this->db->query($sql,[$cd]);

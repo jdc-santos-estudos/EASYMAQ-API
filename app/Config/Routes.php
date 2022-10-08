@@ -40,29 +40,47 @@ $routes->post('/dashboard/login','Dashboard::login');
 
 // rotas de usuário
 $routes->post('/usuario/cadastrar','Usuario::cadastrar');
+$routes->post('/usuario/cadastrar-admin','Usuario::cadastrarAdmin');
 $routes->get('/usuario/perfil','Usuario::perfil');
 $routes->get('/usuario/get-info','Usuario::getInfo');
+// $routes->delete('/usuario/deletar-conta','Usuario::deletarConta'); nao será utilizado por enquanto
 
-// rotas de configurações
-$routes->get('/v1/get-config-front','Configuracao::getConfigFront');
+// categorias
+$routes->post('/categorias/cadastrar','Categoria::cadastrar');
+$routes->post('/categorias/atualizar','Categoria::atualizar');
+$routes->get('/categorias/listar', 'Categoria::listar');
+$routes->delete('/categorias/excluir/(:num)','Categoria::excluir/$1');
+
+// perfil
+// $routes->post('/perfil/cadastrar','Perfil::cadastrar'); // nao terá por enquanto
+// $routes->post('/perfil/atualizar','Perfil::atualizar'); // nao terá por enquanto
+$routes->get('/perfil/listar', 'Perfil::listar');
+// $routes->delete('/perfil/excluir/(:num)','Perfil::excluir/$1'); // nao terá por enquanto
+
+// pedido
+$routes->post('/pedido/novo-pedido', 'Pedido::novo');
+$routes->get('/pedido/listar', 'Pedido::listar');
+$routes->post('/pedido/atualizar', 'Pedido::atualizar');
+$routes->get('/pedido/baixar-contrato/(:num)', 'Pedido::baixarContrato/$1');
+
+// maquina
+$routes->post('/maquina/cadastrar', 'Maquina::cadastrar');
+$routes->get('/maquina/listar', 'Maquina::listar');
+$routes->post('/maquina/atualizar', 'Maquina::atualizar');
+$routes->delete('/maquina/deletar/(:num)', 'Maquina::deletar/$1');
 
 // rotas para visualizar o contrato e gerar seu PDF
 $routes->get('/contrato/show-pdf','Contrato::showPDF');
 $routes->get('/contrato/download-pdf','Contrato::downloadPDF');
 
-/*
- * --------------------------------------------------------------------
- * Additional Routing
- * --------------------------------------------------------------------
- *
- * There will often be times that you need additional routing and you
- * need it to be able to override any defaults in this file. Environment
- * based routes is one such time. require() additional route files here
- * to make that happen.
- *
- * You will have access to the $routes object within that file without
- * needing to reload it.
- */
+// rotas de configurações
+$routes->get('/v1/get-config-front','Configuracao::getConfigFront');
+$routes->get('/v1/get-configs','Configuracao::getConfigs');
+$routes->post('/v1/get-config','Configuracao::getConfig');
+// $routes->post('/v1/salvar-config');
+
+$routes->get('log/listar', 'Log::listar');
+
 if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }

@@ -12,10 +12,30 @@ class API extends ResourceController
   protected $helpers = ['Http','Url','ObjectToArray', 'JWT'];
   protected $request;
   protected $validation;
-
+  protected $userData = null;
+  protected $encrypter;
+  
   public function __construct() {
     $this->request = \Config\Services::request();
     $this->validation = \Config\Services::validation();
+
+    $config         = new \Config\Encryption();
+    $config->driver = 'OpenSSL';
+
+    $this->encrypter = \Config\Services::encrypter($config);
+  }
+
+  protected function autenticarUsuario($perfisComPermissao) {
+
+    // valida o token, se estiver tudo OK, retorna os dados.
+    $userData = JWT_validate();
+
+    // se o token nao for valido ou se o perfil do usuário logado nao tiver permissão, retorna false.
+    if(!$userData || !in_array($userData->cd_tipo, $perfisComPermissao)) return false;
+
+    $this->userData = $userData;
+
+    return true;
   }
 
   protected function HttpSuccess($data, $message)
