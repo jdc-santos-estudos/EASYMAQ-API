@@ -28,7 +28,7 @@ class Categoria extends API
       }
 
       // resto do codigo >>>>>>>>>>>>>>>>>>>>>
-
+      // teste 
       // resto do codigo <<<<<<<<<<<<<<<<<<<<<
       
       return $this->HttpSuccess([],'categoria cadastrada com sucesso');
