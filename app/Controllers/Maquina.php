@@ -59,7 +59,7 @@ class Maquina extends API
       }
         
       // resto do código >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-   
+         
       // resto do código <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
       return $this->HttpSuccess($perfilData,'máquinas listadas com sucesso');
