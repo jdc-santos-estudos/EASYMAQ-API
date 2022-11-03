@@ -43,6 +43,8 @@ $routes->post('/usuario/cadastrar','Usuario::cadastrar');
 $routes->post('/usuario/cadastrar-admin','Usuario::cadastrarAdmin');
 $routes->get('/usuario/perfil','Usuario::perfil');
 $routes->get('/usuario/get-info','Usuario::getInfo');
+$routes->get('/usuario/get-fornecedores','Usuario::listarFornecedores');
+$routes->get('/usuario/confirm-email', "Usuario::confirmEmail");
 // $routes->delete('/usuario/deletar-conta','Usuario::deletarConta'); nao será utilizado por enquanto
 
 // categorias
@@ -65,19 +67,30 @@ $routes->get('/pedido/baixar-contrato/(:num)', 'Pedido::baixarContrato/$1');
 
 // maquina
 $routes->post('/maquina/cadastrar', 'Maquina::cadastrar');
-$routes->get('/maquina/listar', 'Maquina::listar');
+$routes->get('/maquina/listar', 'Maquina::listarDisponiveis');
+$routes->get('/maquina/listar-por-perfil', 'Maquina::listarPorPerfil');
 $routes->post('/maquina/atualizar', 'Maquina::atualizar');
 $routes->delete('/maquina/deletar/(:num)', 'Maquina::deletar/$1');
 
 // rotas para visualizar o contrato e gerar seu PDF
 $routes->get('/contrato/show-pdf','Contrato::showPDF');
 $routes->get('/contrato/download-pdf','Contrato::downloadPDF');
+$routes->get('/contrato/docusign', 'Contrato::docusign');
+
+$routes->get('/contrato/docusign-callback', 'Contrato::docusignCallback1');
+$routes->post('/contrato/docusign-callback', 'Contrato::docusignCallback');
 
 // rotas de configurações
 $routes->get('/v1/get-config-front','Configuracao::getConfigFront');
 $routes->get('/v1/get-configs','Configuracao::getConfigs');
-$routes->post('/v1/get-config','Configuracao::getConfig');
-// $routes->post('/v1/salvar-config');
+$routes->get('/v1/get-termos','Configuracao::getTermos');
+$routes->post('/v1/save-config','Configuracao::saveConfig');
+
+
+$routes->get('/estado/listar', "Estado::listar");
+$routes->get('/cidade/listar/(:num)', "Cidade::listar/$1");
+
+$routes->get('/stripe', 'Stripe::init');
 
 $routes->get('log/listar', 'Log::listar');
 

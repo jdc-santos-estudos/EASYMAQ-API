@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Controllers\API;
 
+use App\Models\Configuracao_model;
+
 use Dompdf\Dompdf;
 
 class Contrato extends API
@@ -17,16 +19,41 @@ class Contrato extends API
   {
     $dompdf = new Dompdf();
 
-    // $html = file_get_contents($viewDirectory.'contrato/contrato.html');
-    $html = view('contrato/contrato');
+    // instanciando um objeto da classe Usuario_model
+    $config = new Configuracao_model();
 
-    // html que será transformado em PDF
+    // chamando a função de logar do usuário
+    $config = $config->getConfig(['config' => 'TEMPLATE_CONTRATO']);
+
+    if (count($config) === 1) {
+      $config[0]['ds_valor'] = stripslashes($config[0]['ds_valor']);
+      $html = json_decode($config[0]['ds_valor'],1);
+    }
+
+    // para carregar no navegador
     $dompdf->loadHtml($html);
-    // (Opcional) Tipo do papel e orientação
-    $dompdf->setPaper('A4');
-    // Render HTML para PDF
+    // $dompdf->setPaper('A4');
     $dompdf->render();
-    // Download do arquivo
-    $dompdf->stream('EasyMAQ.pdf');
+    $dompdf->stream('EasyMAQ.pdf', array("Attachment" => false));
+
+    // para salvar no servidor
+    // $dompdf->loadHtml($html);
+    // $dompdf->setPaper('A4');
+    // $dompdf->render();
+    // $output = $dompdf->output();
+    // file_put_contents('../../contratos/algumacoisa.pdf', $output);   
+  }
+
+  public function docusign() {
+    
+  }
+
+  public function docusignCallback() {
+    try {
+      return $this->HttpSuccess([],'callback OK');
+    } catch(\Exception $e) {
+      //retornando mensagem de erro interno
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno callback do docusign.');
+    }
   }
 }

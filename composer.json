@@ -9,7 +9,8 @@
         "codeigniter4/framework": "^4.0",        
         "dompdf/dompdf": "^2.0",
         "docusign/esign-client": "^6.10",
-        "agungsugiarto/codeigniter4-cors": "^2.0"
+        "agungsugiarto/codeigniter4-cors": "^2.0",
+        "stripe/stripe-php": "^9.6"
     },
     "suggest": {
         "ext-fileinfo": "Improves mime type detection for files"

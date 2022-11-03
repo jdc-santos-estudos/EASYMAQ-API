@@ -6,6 +6,8 @@ use App\Controllers\API;
 
 use App\Models\Usuario_model;
 
+use \Firebase\JWT\JWT;
+
 class Usuario extends API
 {
   public function __construct() {
@@ -46,37 +48,39 @@ class Usuario extends API
       if($userData) return $this->HttpError400([], 'email já cadastrado');
 
       // chama função de cadastro de usuário
-      if(!$user->cadastrar($this->request->getVar())) return $this->HttpError400([], 'Erro tentar cadastrar o usuário');
+      $dados = json_decode(json_encode($this->request->getVar()),1);
+      
+      unset($dados['conf_senha']);
+      unset($dados['cd_estado']);
+
+      $userId = $user->cadastrar($dados);
+
+      if(!is_numeric($userId)) return $this->HttpError400([], 'Erro tentar cadastrar o usuário');
 
       // dispara o evento que envia o email
-      
-      // $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      // $charactersLength = strlen($characters);
-      // $randomString = '';
-      // for ($i = 0; $i < $length; $i++) $randomString .= $characters[rand(0, $charactersLength - 1)];
-            
-      // $msg = JWT_generate(['email' => $this->request->getVar('ds_email'), 'replace' => [
-      //   'campo1' => 'valor1',
-      //   'ds_senha' => randomString
-      // ]]);
-    
-      // $c = base64_encode($this->encrypter->encrypt($msg, getenv('api_email_key')));
+      $jwtConfirm = JWT_generate(['id' => $userId]);
 
-      // echo $c.'<br><br>';
+      $payload = [
+        'email' => $dados['ds_email'],
+        'template' => 'cadastro',
+        'replace' => [
+          'token' => $jwtConfirm
+        ]
+      ];
 
-      // // $c = base64_decode($c);
-      // // echo $this->encrypter->decrypt($c, getenv('api_email_key'));
+      $msg = JWT_generate($payload);    
+      $c = base64_encode($this->encrypter->encrypt($msg, getenv('api_email_key')));
 
-      // exit;
-      
-      
+      try {
+        $client = \Config\Services::curlrequest();
+        $response = $client->request('POST', getenv('API_EMAIL').'enviar-email',['json' => ['data' => $c]]);
 
-      // exit;
+        $resEmail = json_decode($response->getBody(),1);
 
-      
-      
-      // retorna a mensagem de sucesso
-      return $this->HttpSuccess([],'usuário cadastrado com sucesso');
+        return $this->HttpSuccess([],'usuário cadastrado com sucesso');
+      } catch(\Exception $e) {
+        return $this->HttpError500([], $e, json_encode($payload), 'Erro interno ao tentar enviar email para o usuário.');
+      }
 
     } catch(\Exception $e) {
       //retornando mensagem de erro interno
@@ -88,7 +92,6 @@ class Usuario extends API
   {
     try {
 
-    
       if(!$this->autenticarUsuario(['ADMIN1'])) {
         return $this->HttpError400([], 'token de acesso inválido ou o usuário não possui permissão');
       }
@@ -114,33 +117,32 @@ class Usuario extends API
       // se encontrou um usuário com o mesmo email, retorna a mensagem
       if($userData) return $this->HttpError400([], 'email já cadastrado');
 
-      $dados = $this->request->getVar();
-      $dados->cd_perfil = 2;
-      $dados->status_usuario = 'INATIVO';
+      $dados = json_decode(json_encode($this->request->getVar()),1);
+      $dados['cd_perfil'] = 2;
 
       function generatePw($n) {
-          $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-          $randomString = '';
-      
-          for ($i = 0; $i < $n; $i++) {
-              $index = rand(0, strlen($characters) - 1);
-              $randomString .= $characters[$index];
-          }
-      
-          return $randomString;
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $randomString = '';
+    
+        for ($i = 0; $i < $n; $i++) {
+          $index = rand(0, strlen($characters) - 1);
+          $randomString .= $characters[$index];
+        }
+    
+        return $randomString;
       }
       
-      $dados->ds_senha = generatePw(12);
+      $dados['ds_senha'] = generatePw(12);
 
       // chama função de cadastro de usuário
       if(!$user->cadastrar($dados)) return $this->HttpError400([], 'Erro tentar cadastrar o usuário');
       
       $payload = [
-        'email' => $dados->ds_email,
+        'email' => $dados['ds_email'],
         'template' => 'cadastroAdmin',
         'replace' => [
-          'ds_senha' => $dados->ds_senha
-          ]
+          'ds_senha' => $dados['ds_senha']
+        ]
       ];
 
       $msg = JWT_generate($payload);
@@ -195,7 +197,7 @@ class Usuario extends API
     } catch(\Exception $e) {
       return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar recuperar os dados usuário logado.');
     }
-  } 
+  }
 
   public function deletarConta() {
     try {
@@ -227,10 +229,41 @@ class Usuario extends API
       // deletando o usuário
       $user->deleteAccount($this->userData->cd_usuario);
 
-      return $this->HttpSuccess($userInfo, 'conta deletada com sucesso');
+      return $this->HttpSuccess([], 'conta deletada com sucesso');
 
     } catch(\Exception $e) {
       return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar deletar a conta.');
+    }
+  }
+
+  public function listarFornecedores() {
+    try {        
+      $user = new Usuario_model();
+
+      $fornecedores = $user->listarFornecedores();
+
+      return $this->HttpSuccess($fornecedores, 'fornecedores listados com sucesso');
+
+    } catch(\Exception $e) {
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar listar os fornecedores.');
+    }
+  }
+
+  public function confirmEmail() {
+    try {        
+      $userData = (JWT::decode($this->request->getVar('token'), getenv('JWT_SECRET'), array("HS256")))->data;
+      $user = new Usuario_model();
+      
+      $tokenLogin = $user->ativarConta($userData->id);
+      if(!is_array($tokenLogin) && !is_bool($tokenLogin)) return $this->HttpError400([], 'Token inválido ou já utilizado');
+
+      $token = false;
+
+      if (is_array($tokenLogin)) $token = JWT_generate($tokenLogin);
+      
+      return $this->HttpSuccess($token,'email autenticado efetuado com sucesso');
+    } catch(\Exception $e) {
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar listar os fornecedores.');
     }
   }
 }

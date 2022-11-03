@@ -13,19 +13,10 @@
     }
 
     public function salvar($data) {
+      $this->builder->where('nm_config', $data['config']);
 
-      // se nao possuir o campo id, insere o novo registro
-      if (! isset($data['cd_configuracao'])) return $this->builder->insert($data);
-
-      $id = $data['cd_configuracao'];
-      unset($data['cd_configuracao']);      
-      
-      $builder->where('cd_configuracao', $id);
-
-      return $builder->update([
-        'nm_config' => $data['nm_config'],
-        'ds_config' => $data['ds_config'],
-        'ds_valor'  => $data['ds_valor'],
+      return $this->builder->update([
+        'ds_valor'  => addslashes(json_encode($data['dados'])),
       ]);
     }
 
@@ -34,13 +25,12 @@
       return ObjectToArray($query->getResult());
     }
 
-    public function getConfigFront($version) {
-      $version = addslashes($version);
+    public function getConfig($dados) {
+      $sql = "SELECT * FROM tb_configuracao";
+      if ($dados['config']) $sql .= " WHERE nm_config = '".$dados['config']."'";
+      
+      $res = $this->db->query($sql);
 
-      $query = $this->db->query('SELECT * FROM tb_configuracao WHERE nm_config = "CONFIG_FRONT"');
-
-      $res = ObjectToArray($query->getResult());
-
-      if (is_array($res) && count($res)) return (json_decode(json_decode($res[0]['ds_valor']),1)[$version]);
+      return ObjectToArray($res->getResult());
     }
 	}

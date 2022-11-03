@@ -19,7 +19,7 @@
         "data" => $userData
       );
 
-      JWT::$leeway = 30;
+      JWT::$leeway = 60;
       return JWT::encode($payload,getenv('JWT_SECRET'), "HS256");
     }
   }

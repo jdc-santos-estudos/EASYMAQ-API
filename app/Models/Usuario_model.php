@@ -10,7 +10,7 @@
       $this->builder = $this->db->table('tb_usuario');
     }
 		
-    public function logar($email, $pw) {
+    public function logar($email, $pw, $logarInterno = false) {
 
       $email = addslashes($email);
       $pw  = addslashes($pw);
@@ -24,7 +24,7 @@
                 tb_perfil
               ON  
                 tb_perfil.cd_perfil = tb_usuario.cd_perfil
-              WHERE ds_email = '".$email."'";
+              WHERE ds_email = '".$email."' AND status_usuario = 'ATIVO' ";
 
       // executa a consulta
       $query = $this->db->query($sql);
@@ -36,7 +36,7 @@
       if (count($res)) {
     
         // se a senha enviada for compativel com a que está no BD...
-        if (password_verify($pw.'.'. getenv('JWT_SECRET'),$res[0]['ds_senha'])) {
+        if (password_verify($pw.'.'. getenv('JWT_SECRET'),$res[0]['ds_senha']) || $logarInterno) {
           
           // tira os dados do usuário do array.
           $user = $res[0];
@@ -51,18 +51,12 @@
     }
 
     public function cadastrar($dados) {
-      $data = [
-        'nm_usuario' => $dados->nm_usuario,
-        'ds_email' => $dados->ds_email,
-        'ds_senha' => password_hash($dados->ds_senha.'.'. getenv('JWT_SECRET'), PASSWORD_BCRYPT),
-        'cd_perfil' => $dados->cd_perfil,
-        'cd_cidade' => $dados->cd_cidade,
-        'dt_criacao' => date('Y-m-d H:i:s')
-      ];
 
-      $data['status_usuario'] = 'INATIVO';
-
-      return $this->builder->insert($data);
+      $dados['ds_senha'] = password_hash(addslashes($dados['ds_senha']).'.'. getenv('JWT_SECRET'), PASSWORD_BCRYPT);
+      $dados['dt_criacao'] = date('Y-m-d H:i:s');
+      $dados['status_usuario'] = 'INATIVO';
+      
+      if ($this->builder->insert($dados)) return $this->db->insertID();
     }
 
     public function buscarPorEmail($email) {
@@ -123,5 +117,29 @@
       
       // se encontrou alguem usuário com este email, retorna os dados dele.
       if ($res) return $res[0];
+    }
+
+    public function listarFornecedores() {
+      $sql = 'SELECT cd_usuario, nm_usuario, ds_email, nm_fantasia, nm_razao_social 
+              FROM tb_usuario 
+              WHERE cd_perfil = 4 AND status_usuario="ATIVO"';
+
+      // executa a consulta
+      $query = $this->db->query($sql);
+
+      // recupera os dados da consulta como Array
+      return ObjectToArray($query->getResult());
+    }
+
+    public function ativarConta($cd_usuario) {
+      $sql = "SELECT * FROM tb_usuario WHERE cd_usuario = {$cd_usuario} AND status_usuario = 'INATIVO'";
+      $query = $this->db->query($sql);
+      $res = ObjectToArray($query->getResult());
+
+      if (count($res)) {
+        $sql = "UPDATE tb_usuario SET status_usuario = 'ATIVO' WHERE cd_usuario = {$cd_usuario} AND status_usuario = 'INATIVO' ";
+        $query = $this->db->query($sql);
+        return $this->logar($res[0]['ds_email'],'',true);
+      }
     }
 	}
