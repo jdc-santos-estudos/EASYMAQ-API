@@ -60,7 +60,11 @@ class Categoria extends API
       }
 
       // resto do codigo >>>>>>>>>>>>>>>>>>>>>
-
+      $cateModel = new Categoria_model();
+      $atualizou = $cateModel->atualizar($this->request->getVar ('cd_categoria'), $this->request->getVar('nm_categoria'));
+      if(!$atualizou){
+        return $this->HttpError400([], 'Erro interno ao tentar atualizar a categoria.');
+      }
       // resto do codigo <<<<<<<<<<<<<<<<<<<<<
       
       return $this->HttpSuccess([],'categoria atualizada com sucesso');
