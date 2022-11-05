@@ -26,10 +26,16 @@ class Categoria extends API
       if(!$this->validation->withRequest($this->request)->run()) {
         return $this->HttpError400($this->validation->getErrors(), 'campos inválidos');
       }
+      $dados=json_decode(json_encode($this->request->getVar()),1);
 
       // resto do codigo >>>>>>>>>>>>>>>>>>>>>
-
-      // resto do codigo <<<<<<<<<<<<<<<<<<<<<
+      $batata = new Categoria_model();
+      if(!$batata->cadastrar($dados)){
+        return $this->HttpError400([], 'Erro interno ao tentar cadastrar categoria.');
+      }
+      
+    
+     // resto do codigo <<<<<<<<<<<<<<<<<<<<<
       
       return $this->HttpSuccess([],'categoria cadastrada com sucesso');
     } catch(\Exception $e) {
@@ -54,7 +60,11 @@ class Categoria extends API
       }
 
       // resto do codigo >>>>>>>>>>>>>>>>>>>>>
-
+      $cateModel = new Categoria_model();
+      $atualizou = $cateModel->atualizar($this->request->getVar ('cd_categoria'), $this->request->getVar('nm_categoria'));
+      if(!$atualizou){
+        return $this->HttpError400([], 'Erro interno ao tentar atualizar a categoria.');
+      }
       // resto do codigo <<<<<<<<<<<<<<<<<<<<<
       
       return $this->HttpSuccess([],'categoria atualizada com sucesso');
@@ -70,8 +80,8 @@ class Categoria extends API
       
       // definindo validações que os campos precisarão passar.
       $this->validation->setRules([
-        'cd_categoria' => 'numeric', // deve ser numerico
-        'nm_categoria' => 'regex_match[/^([a-zA-ZçáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ]|\s|)+$/]' // deve conter apenas letras (com e sem acentos) e espaco
+        'cd_categoria' => 'permit_empty|numeric', // deve ser numerico
+        'nm_categoria' => 'permit_empty|regex_match[/^([a-zA-ZçáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ]|\s|)+$/]' // deve conter apenas letras (com e sem acentos) e espaco
       ]);
 
       // executando a validação dos erros, se encontrar, retorna os erros
@@ -80,10 +90,11 @@ class Categoria extends API
       }
 
       // resto do codigo >>>>>>>>>>>>>>>>>>>>>
-
+         $cateModel = new Categoria_model();
+         $categorias = $cateModel->listar($this->request->getVar ('cd_categoria'), $this->request->getVar('nm_categoria'));
       // resto do codigo <<<<<<<<<<<<<<<<<<<<<
       
-      return $this->HttpSuccess([],'categoria atualizada com sucesso');
+      return $this->HttpSuccess($categorias,'categoria atualizada com sucesso');
     } catch(\Exception $e) {
       return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar atualizar a categoria.');
     }
@@ -103,7 +114,11 @@ class Categoria extends API
       }
       
       // resto do codigo >>>>>>>>>>>>>>>>>>>>>
-
+      $batata = new Categoria_model();
+      if(!$batata->excluir($cd)){
+        return $this->HttpError400([], 'Erro interno ao tentar excluir categoria.');
+      }
+      
       // resto do codigo <<<<<<<<<<<<<<<<<<<<<
 
       return $this->HttpSuccess([], 'categoria deletada com sucesso');
