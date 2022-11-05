@@ -16,7 +16,9 @@ class Categoria_model extends EM_model {
 
         }
 
-        public function atualizar() {
+        public function atualizar($cd_categoria, $nm_categoria) {
+                $sql = " UPDATE tb_categoria SET nm_categoria = '{$nm_categoria}' WHERE cd_categoria = {$cd_categoria}";
+                return $this ->db->query($sql);
 
         }
 
