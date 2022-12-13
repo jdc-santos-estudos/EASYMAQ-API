@@ -142,4 +142,30 @@
         return $this->logar($res[0]['ds_email'],'',true);
       }
     }
+
+    public function atualizarSenha($email, $novaSenha) {
+      $sql = "SELECT * FROM tb_usuario WHERE ds_email = '{$email}'";
+      $query = $this->db->query($sql);
+      $res = ObjectToArray($query->getResult());
+
+      if (count($res)) {
+        $cd_usuario = $res[0]['cd_usuario'];
+        $novaSenha = password_hash(addslashes($novaSenha).'.'. getenv('JWT_SECRET'), PASSWORD_BCRYPT);
+        $sql = "UPDATE tb_usuario SET ds_senha = '{$novaSenha}' WHERE cd_usuario = {$cd_usuario}";
+        return $this->db->query($sql);
+      }
+    }
+
+    public function getDadosPerfil($cd_usuario) {
+      $sql = "SELECT * FROM tb_usuario u JOIN tb_cidade c ON c.cd_cidade = u.cd_cidade WHERE cd_usuario = ". $cd_usuario;
+      $query = $this->db->query($sql);
+      $res = ObjectToArray($query->getResult());
+
+      if (is_array($res) && count($res) == 1) {
+        $user = $res[0];
+        unset($user['ds_senha']);
+        unset($user['cd_payment_costumer_id']);
+        return $user;
+      }
+    }
 	}

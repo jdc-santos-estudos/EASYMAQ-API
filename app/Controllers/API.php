@@ -9,7 +9,7 @@ use App\Models\Configuracao_model;
 
 class API extends ResourceController
 {
-  protected $helpers = ['Http','Url','ObjectToArray', 'JWT','Imagem'];
+  protected $helpers = ['Http','Url','ObjectToArray', 'JWT','Imagem','Contrato'];
   protected $request;
   protected $validation;
   protected $userData = null;

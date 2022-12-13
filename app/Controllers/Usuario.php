@@ -73,7 +73,7 @@ class Usuario extends API
 
       try {
         $client = \Config\Services::curlrequest();
-        $response = $client->request('POST', getenv('API_EMAIL').'enviar-email',['json' => ['data' => $c]]);
+        $response = $client->request('POST', getenv('api_email').'enviar-email',['json' => ['data' => $c]]);
 
         $resEmail = json_decode($response->getBody(),1);
 
@@ -151,7 +151,7 @@ class Usuario extends API
 
       try {
         $client = \Config\Services::curlrequest();
-        $response = $client->request('POST', getenv('API_EMAIL').'enviar-email',['json' => ['data' => $c]]);
+        $response = $client->request('POST', getenv('api_email').'enviar-email',['json' => ['data' => $c]]);
 
         $resEmail = json_decode($response->getBody(),1);
 
@@ -171,14 +171,63 @@ class Usuario extends API
       if(!$this->autenticarUsuario(['ADMIN1','ADMIN2','CLIENTE','FORNECEDOR'])) {
         return $this->HttpError400([], 'token de acesso inválido');
       }
+
+      $userM =  new Usuario_model();
+      $dados = $userM->getDadosPerfil($this->userData->cd_usuario);
+
+      if (!$dados) return $this->HttpError400([], 'Erro ao recuperar os dados do usuário');
          
-      return $this->HttpSuccess($this->userData, 'dados da conta recuperados com sucesso');
-
+      return $this->HttpSuccess($dados, 'dados da conta recuperados com sucesso');
     } catch(\Exception $e) {
-      
-      //retornando mensagem de erro interno
       return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar cadastrar usuário.');
+    }
+  }
 
+  public function atualizarPerfil() {
+    try {
+      if(!$this->autenticarUsuario(['ADMIN1','ADMIN2','CLIENTE','FORNECEDOR'])) {
+        return $this->HttpError400([], 'token de acesso inválido');
+      }
+
+      $this->validation->setRules([
+        'nm_usuario' => 'required|min_length[3]',
+        'cd_cep' => 'required',
+        'cd_cidade' => 'required',
+        'nm_logradouro' => 'required',
+        'nr_local' => 'required',
+        'nm_bairro' => 'required',
+        'ds_telefone' => 'required',
+        'ds_senha' => 'permit_empty|min_length[6]',
+        'conf_senha' => 'permit_empty|matches[ds_senha]',
+        'senha_atual' => 'required|min_length[6]'
+      ]);
+
+      // executando a validação dos erros, se encontrar, retorna os erros
+      if(!$this->validation->withRequest($this->request)->run()) {
+        return $this->HttpError400($this->validation->getErrors(), 'campos inválidos');
+      }
+
+      // procura um usuário pelo email enviado.
+      $dados = json_decode(json_encode($this->request->getVar()),1);
+
+      $userM =  new Usuario_model();
+
+      if (!$userM->senhaAtualValida()) {
+        return $this->HttpError400(['senhaInvalida' => true], 'Senha inválida');
+      }
+
+      echo "<pre>";
+      print_r($dados);
+      exit;
+
+      
+      $dados = $userM->getDadosPerfil($this->userData->cd_usuario);
+
+      if (!$dados) return $this->HttpError400([], 'Erro ao recuperar os dados do usuário');
+         
+      return $this->HttpSuccess($dados, 'dados da conta recuperados com sucesso');
+    } catch(\Exception $e) {
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar cadastrar usuário.');
     }
   }
 
@@ -263,7 +312,48 @@ class Usuario extends API
       
       return $this->HttpSuccess($token,'email autenticado efetuado com sucesso');
     } catch(\Exception $e) {
-      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar listar os fornecedores.');
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar autenticar o email.');
+    }
+  }
+
+  public function atualizarSenha() {
+    try {
+      
+      // definindo validações que os campos precisarão passar.
+      $this->validation->setRules([
+        'ds_senha' => 'required|min_length[6]',
+        'conf_senha' => 'required|matches[ds_senha]',
+      ]);
+
+      // executando a validação dos erros, se encontrar, retorna os erros
+      if(!$this->validation->withRequest($this->request)->run()) {
+        return $this->HttpError400($this->validation->getErrors(), 'campos inválidos');
+      }
+      
+      $user = new Usuario_model();
+
+      JWT::$leeway = 300;
+
+      $userData = null;
+
+      do {
+        $attempt = 0;
+        try {
+            $userData = (JWT::decode($this->request->getVar('token'), getenv('JWT_SECRET'), array("HS256")))->data;
+            $retry = false;
+        } catch (\Firebase\JWT\BeforeValidException $e) {
+            $attempt++;
+            $retry = $attempt < 5;
+        }
+      } while ($retry);
+
+      if(!$user->atualizarSenha($userData->email, $this->request->getVar('ds_senha'))) {
+        return $this->HttpError400([], 'Erro interno ao tentar atualizar a senha');
+      }
+
+      return $this->HttpSuccess([],'senha atualizada com sucesso');
+    } catch(\Exception $e) {
+      return $this->HttpError500([], $e, $e->getMessage(), 'Erro interno ao tentar atualizar a senha.');
     }
   }
 }

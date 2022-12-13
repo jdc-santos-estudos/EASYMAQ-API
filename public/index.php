@@ -64,4 +64,5 @@ $app->setContext($context);
  * up the engines and make this app do its thang.
  */
 
+ require_once '../ds_config.php';
 $app->run();

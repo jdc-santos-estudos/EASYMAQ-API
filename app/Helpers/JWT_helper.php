@@ -2,13 +2,14 @@
   use \Firebase\JWT\JWT;
 
   if (!function_exists('JWT_generate')) {
-    function JWT_generate($userData) {
+    function JWT_generate($userData, $jwtConfig = []) {
 
       // pega a data atual (em segundos)
       $hora = 3600;
       $iat = time(); // pegando a data em segundos
       $nbf = $iat; // o momento em que o token vai começar a "valer" (atual)
       $exp = $iat + $hora * 24 * 7; // o momento em que o token vai expirar, expira em 7 dias
+      if (isset($jwtConfig['exp'])) $exp = $jwtConfig['exp'];
 
       $payload = array(
         "iss" => "EasyMAQ_API",
@@ -19,7 +20,7 @@
         "data" => $userData
       );
 
-      JWT::$leeway = 60;
+      JWT::$leeway = 300;
       return JWT::encode($payload,getenv('JWT_SECRET'), "HS256");
     }
   }

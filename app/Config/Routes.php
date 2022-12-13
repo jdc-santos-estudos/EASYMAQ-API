@@ -37,14 +37,17 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 $routes->post('/dashboard/login','Dashboard::login');
+$routes->post('/dashboard/redefinir-senha','Dashboard::redefinirSenha');
 
 // rotas de usuário
 $routes->post('/usuario/cadastrar','Usuario::cadastrar');
 $routes->post('/usuario/cadastrar-admin','Usuario::cadastrarAdmin');
 $routes->get('/usuario/perfil','Usuario::perfil');
+$routes->post('/usuario/perfil','Usuario::atualizarPerfil');
 $routes->get('/usuario/get-info','Usuario::getInfo');
 $routes->get('/usuario/get-fornecedores','Usuario::listarFornecedores');
 $routes->get('/usuario/confirm-email', "Usuario::confirmEmail");
+$routes->post('/usuario/atualizar-senha', "Usuario::atualizarSenha");
 // $routes->delete('/usuario/deletar-conta','Usuario::deletarConta'); nao será utilizado por enquanto
 
 // categorias
@@ -63,7 +66,10 @@ $routes->get('/perfil/listar', 'Perfil::listar');
 $routes->post('/pedido/novo-pedido', 'Pedido::novo');
 $routes->get('/pedido/listar', 'Pedido::listar');
 $routes->post('/pedido/atualizar', 'Pedido::atualizar');
+$routes->post('/pedido/atualizar-status', 'Pedido::atualizarStatus');
 $routes->get('/pedido/baixar-contrato/(:num)', 'Pedido::baixarContrato/$1');
+$routes->get('/pagto-stripe', 'Pedido::pagtoStripe');
+$routes->post('/pagto-stripe', 'Pedido::pagtoStripe');
 
 // maquina
 $routes->post('/maquina/cadastrar', 'Maquina::cadastrar');

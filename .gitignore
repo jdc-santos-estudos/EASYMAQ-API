@@ -126,3 +126,4 @@ nb-configuration.xml
 /.phpunit.*.cache
 private.key
 ds_config.php
+public/imagens

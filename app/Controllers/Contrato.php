@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\API;
 
 use App\Models\Configuracao_model;
+use App\Models\Pedido_model;
 
 use Dompdf\Dompdf;
 
@@ -17,31 +18,29 @@ class Contrato extends API
 
   public function downloadPDF()
   {
-    $dompdf = new Dompdf();
+    try {
 
-    // instanciando um objeto da classe Usuario_model
-    $config = new Configuracao_model();
+      $file = basename(urldecode($_GET['cd']));
+      $fileDir = '/home2/easyma68/contratos/';
 
-    // chamando a função de logar do usuário
-    $config = $config->getConfig(['config' => 'TEMPLATE_CONTRATO']);
+      if (file_exists($fileDir . $file.'_assinado.pdf'))
+      {
+        // Note: You should probably do some more checks 
+        // on the filetype, size, etc.
+        $contents = file_get_contents($fileDir . $file);
 
-    if (count($config) === 1) {
-      $config[0]['ds_valor'] = stripslashes($config[0]['ds_valor']);
-      $html = json_decode($config[0]['ds_valor'],1);
+        header("Content-type:application/pdf");
+
+        // It will be called downloaded.pdf
+        header("Content-Disposition:attachment;filename=".$file."_assinado.pdf");
+
+        readfile($fileDir . $file.'_assinado.pdf');
+      }
+
+    } catch(\Exception $e) {
+      echo "ERRO: ";
+      print_r($e->getMessage());
     }
-
-    // para carregar no navegador
-    $dompdf->loadHtml($html);
-    // $dompdf->setPaper('A4');
-    $dompdf->render();
-    $dompdf->stream('EasyMAQ.pdf', array("Attachment" => false));
-
-    // para salvar no servidor
-    // $dompdf->loadHtml($html);
-    // $dompdf->setPaper('A4');
-    // $dompdf->render();
-    // $output = $dompdf->output();
-    // file_put_contents('../../contratos/algumacoisa.pdf', $output);   
   }
 
   public function docusign() {
@@ -50,6 +49,14 @@ class Contrato extends API
 
   public function docusignCallback() {
     try {
+      // $myfile = fopen("pedidos.txt", "a") or die("Unable to open file!");
+      $data = json_decode(json_encode($this->request->getVar('data')),1);
+      $pedidoM =  new Pedido_model();
+
+      $pedidoM->pedidoAssinado($data['envelopeId']);
+
+      // fwrite($myfile, "\n". $txt);
+      // fclose($myfile);
       return $this->HttpSuccess([],'callback OK');
     } catch(\Exception $e) {
       //retornando mensagem de erro interno
